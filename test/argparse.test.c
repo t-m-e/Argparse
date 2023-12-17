@@ -1,3 +1,11 @@
+/*
+ * Argparse test.
+ * Contains:
+ * * Argparse_exists test
+ * * Argparse_get test
+ * * Argparse_getArg test
+ */
+
 #include "../include/argparse.h"
 
 #include <stdio.h>
