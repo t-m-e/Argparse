@@ -1,3 +1,12 @@
+/* 
+ * Implementation for Argparse.
+ * Contains:
+ * * Argparse_Bucket structure
+ * * Argparse_Map structure
+ * * Argparse_RuleList structure
+ * * Argparse strcture
+ */
+
 #ifndef ARGPARSE_H
 #define ARGPARSE_H
 
@@ -10,8 +19,17 @@
 
 /* ===== Hashmap Implementation ===== */
 
+/* Update if more arguments needed */
 #define ARGPARSE_BUCKET_COUNT 20 
 
+/*
+ * Buckets for Map. 
+ * Contains:
+ * * key => key value to create hash entry
+ * * value => string being stored
+ * * nonce => number added to original hash value to get current entry
+ * * next => pointer to the next argument for the current key
+ */
 struct Argparse_Bucket {
     char* key;
     char* value;
@@ -19,6 +37,13 @@ struct Argparse_Bucket {
     struct Argparse_Bucket* next;
 }; 
 
+/*
+ * Map to contain buckets.
+ * Contains:
+ * * buckets => array of ARGPARSE_BUCKET_COUNT buckets
+ * * size => total number of buckets
+ * * count => current number of buckets allocated
+ */
 struct Argparse_Map {
     struct Argparse_Bucket* buckets[ARGPARSE_BUCKET_COUNT];
     size_t size;
@@ -28,7 +53,8 @@ struct Argparse_Map {
 /* static definitions */
 
 /*
- * hashing function
+ * Hash function.
+ * Generates hashes from keys.
  */
 ARGPAR_MAP size_t Argparse_Map_hashFunc(
     char* key
@@ -45,6 +71,10 @@ ARGPAR_MAP size_t Argparse_Map_hashFunc(
     return hash % ARGPARSE_BUCKET_COUNT;
 }
 
+/*
+ * Initialize a new Map.
+ * Defaults values
+ */
 ARGPAR_MAP struct Argparse_Map Argparse_Map_new() {
     return (struct Argparse_Map) {
         .buckets = { 0 },
@@ -54,7 +84,9 @@ ARGPAR_MAP struct Argparse_Map Argparse_Map_new() {
 }
 
 /*
- * append buckets to hashmap
+ * Append key, value pair to Map.
+ * If key doesn't exist, create a new bucket allocation.
+ * If key does exist, append new bucket to existing bucket allocation.
  */
 ARGPAR_MAP int Argparse_Map_append(
     struct Argparse_Map* map,
@@ -139,7 +171,9 @@ ARGPAR_MAP int Argparse_Map_append(
 }
 
 /* 
- * check if key exists
+ * Check is a key exists in Map.
+ * If 0, then key doesn't exist.
+ * If 1, then key exists.
  */
 ARGPAR_MAP int Argparse_Map_exists(
     struct Argparse_Map* map,
@@ -169,7 +203,9 @@ ARGPAR_MAP int Argparse_Map_exists(
 }
 
 /*
- * get values from mapped buckets
+ * Get value from Map.
+ * If bucket is allocated, return the value in the bucket.
+ * If bucket isn't allocated, return NULL.
  */
 ARGPAR_MAP char* Argparse_Map_get(
     struct Argparse_Map* map,
@@ -199,7 +235,9 @@ ARGPAR_MAP char* Argparse_Map_get(
 }
 
 /*
- * get specified argument from mapped buckets
+ * Get specified value from Map.
+ * If bucket is allocated, return the value in the bucket of the specified offset.
+ * If bucket isn't allocated, return NULL.
  */
 ARGPAR_MAP char* Argparse_Map_getArgument(
     struct Argparse_Map* map,
@@ -235,7 +273,7 @@ ARGPAR_MAP char* Argparse_Map_getArgument(
 }
 
 /*
- * free buckets and clean memory
+ * Free buckets from Map.
  */
 ARGPAR_MAP void Argparse_Map_free(
     struct Argparse_Map* map
@@ -261,14 +299,20 @@ ARGPAR_MAP void Argparse_Map_free(
 /* structure definitions */
 
 /*
- * wrapper struct around the hashmap
+ * Argparse structure.
+ * Contains:
+ * * map => Map of key, value pairs
  */
 struct Argparse {
     struct Argparse_Map map;
 };
 
 /* 
- * linked list of possible flags
+ * RuleList Structure.
+ * Contains:
+ * * flag => key value of the Rule
+ * * argCount => number of arguments associated with the flag
+ * * next => pointer to next Rule in the list
  */
 struct Argparse_RuleList {
     char* flag;
@@ -277,6 +321,14 @@ struct Argparse_RuleList {
 };
 
 /* static definitions */
+
+/*
+ * Initialize new Argparse structure.
+ * Parse the rule into a RuleList.
+ * Use RuleList to parse args into Map.
+ * If error, return { 0 }.
+ * If success, return Argparse structure with key, value pairs input.
+ */
 ARGPAR_IMPL struct Argparse Argparse_new(
     char* rule,
     char** args,
@@ -408,7 +460,9 @@ ARGPAR_IMPL struct Argparse Argparse_new(
 }
 
 /*
- * check if flag exists
+ * Check if a key exists in Map.
+ * If key exists in Map, return 1.
+ * If key doesn't exist in Map, return 0.
  */
 ARGPAR_IMPL int Argparse_exists(
     struct Argparse* argparse,
@@ -418,7 +472,9 @@ ARGPAR_IMPL int Argparse_exists(
 }
 
 /* 
- * get argument
+ * Get value from key in Map.
+ * If key doesn't exist in Map, return NULL.
+ * If key exists in Map, return value.
  */
 ARGPAR_IMPL char* Argparse_get(
     struct Argparse* argparse,
@@ -428,7 +484,9 @@ ARGPAR_IMPL char* Argparse_get(
 }
 
 /*
- * get specified argument
+ * Get value at index offset in Map.
+ * If key doesn't exist in Map, return NULL.
+ * If key exists in Map, return value at index offset (if exists).
  */
 ARGPAR_IMPL char* Argparse_getArg(
     struct Argparse* argparse,
@@ -439,7 +497,7 @@ ARGPAR_IMPL char* Argparse_getArg(
 }
 
 /* 
- * free argparse map
+ * Free Map in Argparse.
  */
 ARGPAR_IMPL void Argparse_free(
     struct Argparse* argparse
