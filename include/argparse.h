@@ -276,8 +276,6 @@ ARGPAR_MAP char* Argparse_Map_getArg(
     return bucket->value;
 }
 
-#include <stdio.h>
-
 /*
  * Free buckets from Map.
  */
