@@ -239,7 +239,7 @@ ARGPAR_MAP char* Argparse_Map_get(
  * If bucket is allocated, return the value in the bucket of the specified offset.
  * If bucket isn't allocated, return NULL.
  */
-ARGPAR_MAP char* Argparse_Map_getArgument(
+ARGPAR_MAP char* Argparse_Map_getArg(
     struct Argparse_Map* map,
     char* key,
     size_t argIndex
@@ -269,6 +269,10 @@ ARGPAR_MAP char* Argparse_Map_getArgument(
         bucket = bucket->next;
     }
 
+    if (bucket == NULL) {
+        return NULL;
+    }
+
     return bucket->value;
 }
 
@@ -278,15 +282,15 @@ ARGPAR_MAP char* Argparse_Map_getArgument(
 ARGPAR_MAP void Argparse_Map_free(
     struct Argparse_Map* map
 ) {
-    for (size_t i = 0; i < map->count; i++) {
+    for (size_t i = 0; i < map->size; i++) {
         if (map->buckets[i] != NULL) {
             struct Argparse_Bucket* ptr = map->buckets[i];
             while (ptr != NULL) {
                 struct Argparse_Bucket* tmp = ptr;
                 ptr = ptr->next;
                 free(tmp);
-                tmp = NULL;
             }
+            map->buckets[i] = NULL;
         }
     }
 
@@ -493,7 +497,7 @@ ARGPAR_IMPL char* Argparse_getArg(
     char* key,
     size_t index
 ) {
-    return Argparse_Map_getArgument(&argparse->map, key, index);
+    return Argparse_Map_getArg(&argparse->map, key, index);
 }
 
 /* 
