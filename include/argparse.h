@@ -14,7 +14,11 @@
 #include <stddef.h>
 #include <string.h>
 
+// remove this...
+#include <stdio.h>
+
 #define ARGPAR_MAP  static
+#define ARGPAR_LIST static
 #define ARGPAR_IMPL static
 
 /* ===== Hashmap Implementation ===== */
@@ -300,6 +304,78 @@ ARGPAR_MAP void Argparse_Map_free(
 
 /* ===== Hashmap Implementation End ===== */
 
+/* ===== LinkedList Implementation ===== */
+
+/* structure definitions */
+
+/*
+ * LinkedList structure.
+ * Contains:
+ * * data => string of parameter which doesn't match Rule string
+ * * next => pointer to next LinkedList node
+ */
+struct Argparse_List {
+    char* data;
+    struct Argparse_List* next;
+};
+
+/* static definitions */
+
+/*
+ * Append parameter to List.
+ */
+ARGPAR_LIST int Argparse_List_append(
+    struct Argparse_List** list,
+    char* param
+) {
+    if (param == NULL) return 0;
+
+    if (*list == NULL) {
+        *list = malloc(sizeof(struct Argparse_List));
+        if (*list == NULL) {
+            return 0;
+        }
+
+        (*list)->data = calloc(1, strlen(param));
+        if ((*list)->data == NULL) {
+            free(*list);
+            return 0;
+        }
+        memcpy((*list)->data, param, strlen(param));
+        (*list)->next = NULL;
+    } else {
+        struct Argparse_List* ptr = *list;
+        while (ptr->next != NULL) {
+            ptr = ptr->next;
+        }
+
+        ptr->next = malloc(sizeof(struct Argparse_List));
+        ptr->next->data = calloc(1, strlen(param));
+        if (ptr->next->data == NULL) {
+            free(ptr->next);
+            return 0;
+        }
+        memcpy(ptr->next->data, param, strlen(param));
+        ptr->next->next = NULL;
+    }
+
+    return 1;
+}
+
+/*
+ * Foreach iterator for parameters
+ * Contains:
+ * * x => variable name of argparse.list->data
+ * * y => struct Argparse variable
+ */
+#define FOREACH_ARGPARSE_PARAM(x, y) \
+    struct Argparse_List* __argparse_list_ptr = (y).list; \
+    char* x = __argparse_list_ptr->data; \
+    if (__argparse_list_ptr) \
+        for (; __argparse_list_ptr != NULL; __argparse_list_ptr = __argparse_list_ptr->next, x = (__argparse_list_ptr) ? __argparse_list_ptr->data : NULL)
+
+/* ===== LinkedList Implementation End ===== */
+
 /* structure definitions */
 
 /*
@@ -309,6 +385,7 @@ ARGPAR_MAP void Argparse_Map_free(
  */
 struct Argparse {
     struct Argparse_Map map;
+    struct Argparse_List* list;
 };
 
 /* 
@@ -339,10 +416,11 @@ ARGPAR_IMPL struct Argparse Argparse_new(
     int argCount
 ) {
     struct Argparse argparse = {
-        .map = Argparse_Map_new()
+        .map = Argparse_Map_new(),
+        .list = NULL
     };
     size_t ruleIndex = 0;
-    size_t argIndex = 1;
+    size_t argIndex = 0;
 
     /* create rule list */
     struct Argparse_RuleList* rules = NULL;
@@ -455,7 +533,9 @@ ARGPAR_IMPL struct Argparse Argparse_new(
         } 
 
         if (found == 0) {
-            return (struct Argparse) { 0 };
+            if (Argparse_List_append(&argparse.list, args[argIndex++]) == 0) {
+                return (struct Argparse) { 0 };
+            }
         }
     }
      
@@ -498,6 +578,29 @@ ARGPAR_IMPL char* Argparse_getArg(
     size_t index
 ) {
     return Argparse_Map_getArg(&argparse->map, key, index);
+}
+
+/*
+ * Get parameter value at index offset in List.
+ * If the index isn't found, return NULL.
+ * If the index is found, return value;
+ */
+ARGPAR_IMPL char* Argparse_getParam(
+    struct Argparse* argparse,
+    size_t index
+) {
+    if (argparse->list == NULL) {
+        return NULL;
+    }
+
+    size_t i = 0;
+    FOREACH_ARGPARSE_PARAM(item, *argparse) {
+        if (i == index) return item;
+        else if (i > index) return NULL;
+        i++;
+    }
+
+    return NULL;
 }
 
 /* 
