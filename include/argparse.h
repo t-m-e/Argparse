@@ -14,9 +14,6 @@
 #include <stddef.h>
 #include <string.h>
 
-// remove this...
-#include <stdio.h>
-
 #define ARGPAR_MAP  static
 #define ARGPAR_LIST static
 #define ARGPAR_IMPL static
