@@ -27,10 +27,15 @@ static int argparse_test_total_count = 0;
         printf("[+] %s ...passed!\n", #x); \
     }
 
-int main(int argc, char** argv) {
+int main() {
+    int argc = 8;
+    char* argv[] = {
+        "-a", "-b", "1", "-c", "2", "3", "something", "else"
+    };
+
     /* Argparse_new test */
     TEST(Argparse_new);
-    printf("[*] ... testing ");
+    printf("[*] ... ");
     for (int i = 0; i < argc; i++) {
         printf("%s ", argv[i]);
     }
@@ -67,6 +72,14 @@ int main(int argc, char** argv) {
     printf("[*] ... %s\n", Argparse_getArg(&argparse, "-c", 0));
     TEST_ASSERT(Argparse_getArg(&argparse, "-c", 1) != NULL);
     printf("[*] ... %s\n", Argparse_getArg(&argparse, "-c", 1));
+
+    /* Argparse_getParam test */
+    TEST(Argparse_getParam);
+    TEST_ASSERT(Argparse_getParam(&argparse, 0) != NULL);
+    printf("[*] ... %s\n", Argparse_getParam(&argparse, 0));
+    TEST_ASSERT(Argparse_getParam(&argparse, 1) != NULL);
+    printf("[*] ... %s\n", Argparse_getParam(&argparse, 1));
+    TEST_ASSERT(Argparse_getParam(&argparse, 2) == NULL);
 
     /* Argparse_free test */
     TEST(Argparse_free);
