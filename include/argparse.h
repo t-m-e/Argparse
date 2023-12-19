@@ -367,9 +367,8 @@ ARGPAR_LIST int Argparse_List_append(
  */
 #define FOREACH_ARGPARSE_PARAM(x, y) \
     struct Argparse_List* __argparse_list_ptr = (y).list; \
-    char* x = __argparse_list_ptr->data; \
     if (__argparse_list_ptr) \
-        for (; __argparse_list_ptr != NULL; __argparse_list_ptr = __argparse_list_ptr->next, x = (__argparse_list_ptr) ? __argparse_list_ptr->data : NULL)
+        for (char* x = __argparse_list_ptr->data; __argparse_list_ptr != NULL; __argparse_list_ptr = __argparse_list_ptr->next, x = (__argparse_list_ptr) ? __argparse_list_ptr->data : NULL)
 
 /* ===== LinkedList Implementation End ===== */
 
