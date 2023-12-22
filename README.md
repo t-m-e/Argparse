@@ -7,11 +7,7 @@ Argparse is a header-only implementation made to be easily integrated into any p
 
 ## Rule Strings
 
-Rule strings are strings that define names of arguments and how many arguments they consume. Rule strings take the following format: `:` consumes an argument, whitespace delimits different argument names, and anything else is parsed as an argument string.
-Example:
-- `-a -b: -c::`
-- `alpha beta: gamma`
-
+Rule strings are strings that define names of flags and how many arguments they consume. Rule strings take the following format: `:` consumes an argument, whitespace delimits different flag names, and anything else is parsed as a flag.
 Good thing to note, the Argparse parsing takes argument names literally, so if your argument is input as `-a` then the parser will interpret it as it is input.
 
 ## Usage
@@ -41,8 +37,6 @@ int main(
 
 Use with self defined array:
 ```c
-/* $ ./argparse */
-
 #include "include/argparse.h"
 #include <stdio.h>
 
@@ -56,6 +50,8 @@ int main() {
 
     if (Argparse_exists(&argparse, "-a")) { /* ... */ }
     if (Argparse_exists(&argparse, "-b")) { /* ... */ }
+    
+    char* param = Argparse_getParam(&argparse, 0);
     
     /* macro defined in argparse.h
      * item is a user defined name for the parameter value (a char*) inside of the loop scope
